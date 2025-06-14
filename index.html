@@ -1,0 +1,256 @@
+<html lang="en" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Click Precision</title>
+    <link rel="icon" type="image/svg+xml" href="code-outline.svg" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+      };
+    </script>
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
+    ></script>
+    <script defer src="main.js"></script>
+  </head>
+  <body
+    class="bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center min-h-screen p-4 transition-colors duration-300"
+  >
+    <h1
+      class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100"
+    >
+      Treinador de Precisão de Clique
+    </h1>
+
+    <div class="flex flex-col lg:flex-row gap-6 items-start w-full max-w-7xl">
+      <!-- Área do Jogo -->
+      <div
+        id="gameArea"
+        class="relative bg-white dark:bg-gray-800 border border-gray-400 dark:border-gray-700 rounded-lg overflow-hidden w-full max-w-[900px] h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px] transition-colors duration-300"
+      >
+        <div
+          id="target"
+          class="absolute ml-2 mt-2 bg-red-500 rounded-full transition-all duration-300 ease-out pulse"
+          style="width: 25px; height: 25px"
+        ></div>
+      </div>
+
+      <!-- Painel de Controles e Estatísticas -->
+      <div
+        class="flex flex-col gap-4 w-full max-w-sm text-gray-700 dark:text-gray-300 transition-colors duration-300"
+      >
+        <div class="text-lg font-semibold">Configurações:</div>
+        <div class="space-y-4 text-sm">
+          <!-- Tamanho do alvo -->
+          <div>
+            <label for="targetSize" class="block font-medium mb-1"
+              >Tamanho do alvo</label
+            >
+            <div class="flex flex-wrap items-center gap-3">
+              <input
+                type="number"
+                id="targetSize"
+                min="5"
+                max="75"
+                value="25"
+                class="w-20 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+              />
+              <div
+                class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
+              >
+                Exemplo:
+                <div
+                  id="previewDot"
+                  class="bg-red-500 rounded-full transition-all duration-300 scale-animate"
+                  style="width: 25px; height: 25px"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Intervalo de movimento -->
+          <div>
+            <label for="moveInterval" class="block font-medium mb-1"
+              >Mover automaticamente a cada</label
+            >
+            <div class="flex items-center gap-2 flex-wrap">
+              <input
+                type="number"
+                id="moveInterval"
+                min="0"
+                value="0"
+                class="w-20 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+              />
+              <span
+                class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap"
+                >Segundo</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Container dos botões -->
+        <div class="flex items-center justify-between gap-4 mt-4 w-full">
+          <!-- Botão de Limpar -->
+          <button
+            id="startBtn"
+            class="bg-gray-500 dark:bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 dark:hover:bg-gray-600 shadow hover:shadow-md transition transform active:scale-95 flex-1"
+          >
+            Limpar - estatísticas
+          </button>
+
+          <!-- Botão de Tema -->
+          <button
+            id="themeToggle"
+            class="px-3 py-2 rounded bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+            aria-label="Alternar tema claro e escuro"
+          >
+            <ion-icon
+              id="sunIcon"
+              name="sunny-outline"
+              class="text-xl hidden"
+            ></ion-icon>
+            <ion-icon
+              id="moonIcon"
+              name="moon-outline"
+              class="text-xl hidden"
+            ></ion-icon>
+          </button>
+
+          <!-- Botão de Cor da Bolinha (ícone com input hidden) -->
+          <div class="relative">
+            <button
+              id="colorIconBtn"
+              class="p-2 rounded-full bg-red-500 hover:scale-110 transition-transform shadow-md text-white"
+              aria-label="Alterar cor da bolinha"
+            >
+              <ion-icon name="color-palette-outline" class="text-xl"></ion-icon>
+            </button>
+            <input
+              type="color"
+              id="targetColor"
+              value="#ef4444"
+              class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+              title="Escolher cor"
+            />
+          </div>
+        </div>
+
+        <div class="text-lg font-semibold mt-2">Estatísticas:</div>
+        <ul class="space-y-1 text-sm">
+          <li>Total de cliques: <span id="totalClicks">0</span></li>
+          <li>Acertos: <span id="hits">0</span></li>
+          <li>Erros: <span id="misses">0</span></li>
+          <li>Precisão (%): <span id="accuracy">0</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <style>
+      /* Pulse animation */
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.15);
+          opacity: 1;
+        }
+      }
+
+      /* Bounce animation ao clicar */
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10%);
+        }
+      }
+
+      /* Scale animation para o previewDot */
+      @keyframes scaleUpDown {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1);
+        }
+      }
+
+      .pulse {
+        animation: pulse 3s infinite ease-in-out;
+      }
+
+      .bounce {
+        animation: bounce 0.1s ease;
+      }
+
+      .scale-animate {
+        animation: scaleUpDown 1s infinite ease-in-out;
+      }
+
+      @keyframes pingShort {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 0.75;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .animate-ping-short {
+        animation: pingShort 0.3s ease-in-out;
+      }
+    </style>
+
+    <script>
+      const themeToggle = document.getElementById("themeToggle");
+      const htmlElement = document.documentElement;
+      const sunIcon = document.getElementById("sunIcon");
+      const moonIcon = document.getElementById("moonIcon");
+
+      // Função que atualiza os ícones com base na classe atual
+      function updateThemeIcon() {
+        const isDark = htmlElement.classList.contains("dark");
+        sunIcon.classList.toggle("hidden", !isDark); // mostra só no claro
+        moonIcon.classList.toggle("hidden", isDark); // mostra só no escuro
+      }
+
+      // Inicializa com base no sistema ou padrão
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
+        htmlElement.classList.add("dark");
+      } else {
+        htmlElement.classList.remove("dark");
+      }
+
+      updateThemeIcon(); // chama ao carregar
+
+      // Alternar tema e atualizar ícone
+      themeToggle.addEventListener("click", () => {
+        htmlElement.classList.toggle("dark");
+        updateThemeIcon();
+      });
+    </script>
+  </body>
+</html>
